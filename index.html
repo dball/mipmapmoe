@@ -1,13 +1,17 @@
 <html>
   <head>
+    <script src="out/goog/base.js"></script>
+    <script src="out/mmm.js"></script>
     <script>
+      goog.require("db.mmm");
+      
       var scene = {
-        center: { x: -400, y: -300 },
+        canvas: {},
+        center: {},
         drag: {}
       };
 
-      function init() {
-        scene.canvas = document.getElementById("map");
+      function draw() {
         var context = scene.canvas.getContext("2d");
         for (var x=0.5; x<scene.canvas.width; x+=10) {
           context.moveTo(x, 0);
@@ -17,35 +21,34 @@
         }
       }
 
+      function init() {
+        scene.canvas = document.getElementById("map");
+        scene.center = { x: -400, y: -300 };
+        draw();
+      }
+
       function mousedown(e) {
-        var canvas = document.getElementById("map");
-        canvas.style.cursor = "move";
+        scene.canvas.style.cursor = "move";
         scene.drag = { x: e.clientX, y: e.clientY };
       }
 
       function mouseup(e) {
-        var canvas = document.getElementById("map");
-        canvas.style.cursor = "default";
+        scene.canvas.style.cursor = "default";
         scene.center = {
           x: scene.center.x + e.clientX - scene.drag.x,
           y: scene.center.y + e.clientY - scene.drag.y
         };
-        console.log("center is now", scene.center);
         scene.drag = {};
       }
 
       function mousemove(e) {
         if (scene.drag.x && scene.drag.y) {
-          var canvas = document.getElementById("map");
-          canvas.style.left = scene.center.x + e.clientX - scene.drag.x;
-          canvas.style.top = scene.center.y + e.clientY - scene.drag.y;
+          scene.canvas.style.left = scene.center.x + e.clientX - scene.drag.x;
+          scene.canvas.style.top = scene.center.y + e.clientY - scene.drag.y;
         }
       }
       
-      window.onload = init;
-      window.onmousedown = mousedown;
-      window.onmouseup = mouseup;
-      window.onmousemove = mousemove;
+
     </script>
     <style>
       #viewport {
