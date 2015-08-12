@@ -4,51 +4,6 @@
     <script src="out/mmm.js"></script>
     <script>
       goog.require("db.mmm");
-      
-      var scene = {
-        canvas: {},
-        center: {},
-        drag: {}
-      };
-
-      function draw() {
-        var context = scene.canvas.getContext("2d");
-        for (var x=0.5; x<scene.canvas.width; x+=10) {
-          context.moveTo(x, 0);
-          context.lineTo(x, scene.canvas.height);
-          context.strokeStyle = "#eee";
-          context.stroke();
-        }
-      }
-
-      function init() {
-        scene.canvas = document.getElementById("map");
-        scene.center = { x: -400, y: -300 };
-        draw();
-      }
-
-      function mousedown(e) {
-        scene.canvas.style.cursor = "move";
-        scene.drag = { x: e.clientX, y: e.clientY };
-      }
-
-      function mouseup(e) {
-        scene.canvas.style.cursor = "default";
-        scene.center = {
-          x: scene.center.x + e.clientX - scene.drag.x,
-          y: scene.center.y + e.clientY - scene.drag.y
-        };
-        scene.drag = {};
-      }
-
-      function mousemove(e) {
-        if (scene.drag.x && scene.drag.y) {
-          scene.canvas.style.left = scene.center.x + e.clientX - scene.drag.x;
-          scene.canvas.style.top = scene.center.y + e.clientY - scene.drag.y;
-        }
-      }
-      
-
     </script>
     <style>
       #viewport {
