@@ -6,7 +6,8 @@
                  [adzerk/boot-reload        "0.3.1"           :scope "test"]
                  [pandeiro/boot-http        "0.6.3-SNAPSHOT"  :scope "test"]
                  [org.clojure/clojure       "1.7.0"]
-                 [org.clojure/clojurescript "1.7.48"]])
+                 [org.clojure/clojurescript "1.7.48"]
+                 [rm-hull/monet "0.2.1"]])
 
 (require
  '[adzerk.boot-cljs      :refer [cljs]]

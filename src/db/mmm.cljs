@@ -1,4 +1,5 @@
-(ns db.mmm)
+(ns db.mmm
+  (:require [monet.canvas :as canvas]))
 
 (enable-console-print!)
 
@@ -10,14 +11,22 @@
   (let [{:keys [canvas]} @scene
         height (.-height canvas)
         width (.-width canvas)
-        context (.getContext canvas "2d")]
-    (set! (.-strokeStyle context) "#eee")
+        context (canvas/get-context canvas "2d")]
     (loop [x 0.5]
       (when (< x width)
-        (.moveTo context x 0)
-        (.lineTo context x height)
-        (.stroke context)
-        (recur (+ x 10))))))
+        (-> context
+            (canvas/move-to x 0)
+            (canvas/line-to x height))
+        (recur (+ x 10))))
+    (loop [y 0.5]
+      (when (< y height)
+        (-> context
+            (canvas/move-to 0 y)
+            (canvas/line-to width y))
+        (recur (+ y 10))))
+    (-> context
+        (canvas/stroke-style "#eee")
+        (canvas/stroke))))
 
 (defn position
   [event]
