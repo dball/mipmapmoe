@@ -1,6 +1,15 @@
 (ns db.mmm
   (:require [monet.canvas :as canvas]))
 
+(defmacro with-style
+  [context & body]
+  `(do
+     (canvas/save ~context)
+     (try
+       ~@body
+       (finally
+         (canvas/restore ~context)))))
+
 (enable-console-print!)
 
 (def scene
@@ -58,13 +67,18 @@
 
 (defn init!
   []
-  (let [canvas (.getElementById js/document "map")
-        viewport (.getElementById js/document "viewport")
-        center [-400 -300]]
-    (swap! scene assoc :canvas canvas :center center)
+  (let [viewport (.getElementById js/document "viewport")
+        canvas (.getElementById js/document "map")
+        dimensions [(.-clientWidth viewport) (.-clientHeight viewport)]
+        center (mapv (partial * -1) dimensions)]
+    (set! (.-width canvas) (* 3 (first dimensions)))
+    (set! (.-height canvas) (* 3 (last dimensions)))
+    (set! (.-left canvas) (first center))
+    (set! (.-top canvas) (last center))
     (.addEventListener viewport "mousedown" mouse-down)
     (.addEventListener viewport "mouseup" mouse-up)
     (.addEventListener viewport "mousemove" mouse-move)
-    (.addEventListener viewport "mouseout" mouse-up)))
+    (.addEventListener viewport "mouseout" mouse-up)
+    (swap! scene assoc :canvas canvas :center center)))
 
 (.addEventListener js/window "load" (comp draw! init!))
