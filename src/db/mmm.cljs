@@ -16,20 +16,26 @@
 (defn draw!
   []
   (let [{:keys [canvas center draws scale]} @scene
+        [left-offset top-offset] center
         width (.-width canvas)
         height (.-height canvas)
         offscreen-canvas (.createElement js/document "canvas")]
+    (set! (.-left (.-style canvas)) (/ width -3))
+    (set! (.-top (.-style canvas)) (/ height -3))
     (set! (.-width offscreen-canvas) width)
     (set! (.-height offscreen-canvas) height)
     (let [context (canvas/get-context offscreen-canvas "2d")]
       (with-style context
-        (canvas/transform context scale 0 0 scale (/ width 2) (/ height 2))
+        (canvas/transform context scale 0 0 scale
+                          (+ left-offset (/ width 2))
+                          (+ top-offset (/ height 2)))
         (canvas/stroke-style context "#eee")
         (canvas/stroke-width context 0.1)
-        (doseq [radius (range 1 (* (inc draws) 20))]
+        (doseq [radius (range 1 (* (inc draws) 5))]
           (canvas/circle context {:x 0 :y 0 :r radius})
           (canvas/stroke context))))
     (let [context (canvas/get-context canvas "2d")]
+      (canvas/clear-rect context {:x 0 :y 0 :w width :h height})
       (canvas/draw-image context offscreen-canvas 0 0)))
   (swap! scene update :draws inc)
   (println @scene))
@@ -56,14 +62,20 @@
                       (set! (.-cursor (.-style canvas)) "default")
                       (let [[left top] (mapv + offset (position event))]
                         (set! (.-left (.-style canvas)) left)
-                        (set! (.-top (.-style canvas)) top))))))
+                        (set! (.-top (.-style canvas)) top))
+                      (mapv - (position event) drag-offset)))))
 
 (defn mouse-up
   [event]
   (let [{:keys [drag-fn]} @scene]
     (when drag-fn
-      (draw!)
-      (swap! scene dissoc :drag-fn))))
+      (let [dragged (drag-fn event)]
+        (println "dragged" dragged)
+        (swap! scene (fn [scene]
+                       (-> scene
+                           (dissoc :drag-fn)
+                           (update :center (partial mapv +) dragged))))
+        (draw!)))))
 
 (defn mouse-move
   [event]
@@ -81,8 +93,6 @@
         height (.-clientHeight viewport)]
     (set! (.-width canvas) (* 3 width))
     (set! (.-height canvas) (* 3 height))
-    (set! (.-left (.-style canvas)) (* -1 width))
-    (set! (.-top (.-style canvas)) (* -1 height))
     (.addEventListener viewport "mousedown" mouse-down)
     (.addEventListener viewport "mouseup" mouse-up)
     (.addEventListener viewport "mousemove" mouse-move)
