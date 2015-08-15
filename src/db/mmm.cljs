@@ -83,6 +83,12 @@
     (when drag-fn
       (drag-fn event))))
 
+(defn mouse-wheel
+  [event delta]
+  (let [operator (if (pos? (.-wheelDelta event)) * /)]
+    (swap! scene update :scale operator 1.2)
+    (draw!)))
+
 (defn init!
   []
   (enable-console-print!)
@@ -97,6 +103,7 @@
     (.addEventListener viewport "mouseup" mouse-up)
     (.addEventListener viewport "mousemove" mouse-move)
     (.addEventListener viewport "mouseout" mouse-up)
+    (.addEventListener viewport "mousewheel" mouse-wheel)
     (swap! scene assoc
            :canvas canvas
            :center [0 0]
