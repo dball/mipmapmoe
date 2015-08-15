@@ -15,18 +15,24 @@
 
 (defn draw!
   []
-  (let [{:keys [canvas center scale]} @scene
+  (let [{:keys [canvas center draws scale]} @scene
         width (.-width canvas)
         height (.-height canvas)
-        context (canvas/get-context canvas "2d")]
-    (println "draw!" scale)
-    (with-style context
-      (canvas/transform context scale 0 0 scale (/ width 2) (/ height 2))
-      (canvas/stroke-style context "#eee")
-      (canvas/stroke-width context 0.1)
-      (doseq [radius (range 1 50)]
-        (canvas/circle context {:x 0 :y 0 :r radius})
-        (canvas/stroke context)))))
+        offscreen-canvas (.createElement js/document "canvas")]
+    (set! (.-width offscreen-canvas) width)
+    (set! (.-height offscreen-canvas) height)
+    (let [context (canvas/get-context offscreen-canvas "2d")]
+      (with-style context
+        (canvas/transform context scale 0 0 scale (/ width 2) (/ height 2))
+        (canvas/stroke-style context "#eee")
+        (canvas/stroke-width context 0.1)
+        (doseq [radius (range 1 (* (inc draws) 20))]
+          (canvas/circle context {:x 0 :y 0 :r radius})
+          (canvas/stroke context))))
+    (let [context (canvas/get-context canvas "2d")]
+      (canvas/draw-image context offscreen-canvas 0 0)))
+  (swap! scene update :draws inc)
+  (println @scene))
 
 (defn position
   [event]
@@ -54,7 +60,10 @@
 
 (defn mouse-up
   [event]
-  (swap! scene dissoc :drag-fn))
+  (let [{:keys [drag-fn]} @scene]
+    (when drag-fn
+      (draw!)
+      (swap! scene dissoc :drag-fn))))
 
 (defn mouse-move
   [event]
@@ -81,6 +90,7 @@
     (swap! scene assoc
            :canvas canvas
            :center [0 0]
-           :scale 10)))
+           :scale 10
+           :draws 0)))
 
 (.addEventListener js/window "load" (comp draw! init!))
