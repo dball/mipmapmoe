@@ -15,7 +15,7 @@
 
 (defn draw!
   []
-  (let [{:keys [canvas center draws scale]} @scene
+  (let [{:keys [canvas center scale]} @scene
         [left-offset top-offset] center
         width (.-width canvas)
         height (.-height canvas)
@@ -31,14 +31,12 @@
                           (+ top-offset (/ height 2)))
         (canvas/stroke-style context "#eee")
         (canvas/stroke-width context 0.1)
-        (doseq [radius (range 1 (* (inc draws) 5))]
+        (doseq [radius (range 1 50)]
           (canvas/circle context {:x 0 :y 0 :r radius})
           (canvas/stroke context))))
     (let [context (canvas/get-context canvas "2d")]
       (canvas/clear-rect context {:x 0 :y 0 :w width :h height})
-      (canvas/draw-image context offscreen-canvas 0 0)))
-  (swap! scene update :draws inc)
-  (println @scene))
+      (canvas/draw-image context offscreen-canvas 0 0))))
 
 (defn position
   [event]
@@ -70,7 +68,6 @@
   (let [{:keys [drag-fn]} @scene]
     (when drag-fn
       (let [dragged (drag-fn event)]
-        (println "dragged" dragged)
         (swap! scene (fn [scene]
                        (-> scene
                            (dissoc :drag-fn)
@@ -92,7 +89,6 @@
 (defn init!
   []
   (enable-console-print!)
-  (println "init!")
   (let [viewport (.getElementById js/document "viewport")
         canvas (.getElementById js/document "map")
         width (.-clientWidth viewport)
@@ -107,7 +103,7 @@
     (swap! scene assoc
            :canvas canvas
            :center [0 0]
-           :scale 10
-           :draws 0)))
+           :scale 10)
+    (draw!)))
 
-(.addEventListener js/window "load" (comp draw! init!))
+(.addEventListener js/window "load" init!)
