@@ -29,7 +29,7 @@
         (canvas/transform context scale 0 0 scale
                           (+ left-offset (/ width 2))
                           (+ top-offset (/ height 2)))
-        (canvas/stroke-style context "#eee")
+        (canvas/stroke-style context "#333")
         (canvas/stroke-width context 0.1)
         (doseq [radius (range 1 50)]
           (canvas/circle context {:x 0 :y 0 :r radius})
@@ -86,6 +86,32 @@
     (swap! scene update :scale operator 1.2)
     (draw!)))
 
+(defn init-simple-scene!
+  []
+  (swap! scene assoc
+         :set #{[:figure [0 0] "A"]
+                [:figure [-20 20] "b"]
+                [:figure [10 10] "C"]}))
+
+(defn set-position
+  [[type position]]
+  position)
+
+(defn center
+  [points]
+  (letfn [(median [values] (/ (apply + values) (count values)))]
+    [(or (median (map first points)) 0)
+     (or (median (map last points)) 0)]))
+
+(defn recenter-scene!
+  []
+  (swap! scene (fn [scene]
+                 (let [{:keys [set scale]} scene
+                       center (center (map set-position set))
+                       scalar (partial * scale)]
+                   (println "set" set)
+                   (assoc scene :center (mapv scalar center))))))
+
 (defn init!
   []
   (enable-console-print!)
@@ -100,10 +126,10 @@
     (.addEventListener viewport "mousemove" mouse-move)
     (.addEventListener viewport "mouseout" mouse-up)
     (.addEventListener viewport "mousewheel" mouse-wheel)
-    (swap! scene assoc
-           :canvas canvas
-           :center [0 0]
-           :scale 10)
+    (swap! scene assoc :canvas canvas :scale 10)
+    (init-simple-scene!)
+    (recenter-scene!)
+    (println "center" (:center @scene))
     (draw!)))
 
 (.addEventListener js/window "load" init!)
